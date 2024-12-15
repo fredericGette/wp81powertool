@@ -27,6 +27,12 @@
     <ClInclude Include="getopt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="bluetooth.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BtConnectionManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

@@ -9,6 +9,10 @@ Adds some other usages compared to the existing powertool.exe of Windows Phone 8
 ### Bluetooth
 
 Leverages the COM BtConnectionManager interfaces to turn on/off the Bluetooth radio or query its current state.
+
+### Vibration
+
+Leverages the WRL Windows.Phone.Devices.Notification.VibrationDevice interfaces to make your phone vibrate.
   
 ## Deployment
 

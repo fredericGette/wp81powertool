@@ -12,7 +12,7 @@ Leverages the COM BtConnectionManager interfaces to turn on/off the Bluetooth ra
 
 ### Vibration
 
-Leverages the WRL Windows.Phone.Devices.Notification.VibrationDevice interfaces to make your phone vibrate.
+Leverages the Windows Runtime "Windows.Phone.Devices.Notification.VibrationDevice" interfaces to make your phone vibrate.
   
 ## Deployment
 

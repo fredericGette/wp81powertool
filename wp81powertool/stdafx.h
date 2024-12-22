@@ -16,14 +16,14 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <initguid.h> 
-#include <combaseapi.h>
-#include "BtConnectionManager.h"
+#include "Win32Api.h"
 
 extern "C" {
 	char *getenv(const char *varname);
 	WINBASEAPI VOID WINAPI Sleep(DWORD dwMilliseconds);
 	WINBASEAPI HANDLE WINAPI CreateEventW(LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName);
 	WINBASEAPI DWORD WINAPI WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
+	WINBASEAPI VOID WINAPI DebugBreak(VOID);
 }
 
 extern BOOL verbose;

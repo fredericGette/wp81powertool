@@ -27,10 +27,16 @@
     <ClInclude Include="getopt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bluetooth.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="BtConnectionManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bluetooth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32Api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vibration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,7 +50,7 @@
     <ClCompile Include="bluetooth.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="notification.cpp">
+    <ClCompile Include="vibration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

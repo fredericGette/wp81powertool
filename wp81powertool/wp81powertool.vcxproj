@@ -214,12 +214,14 @@
     <ClInclude Include="bluetooth.h" />
     <ClInclude Include="BtConnectionManager.h" />
     <ClInclude Include="getopt.h" />
+    <ClInclude Include="vibration.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Win32Api.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bluetooth.cpp" />
-    <ClCompile Include="notification.cpp" />
+    <ClCompile Include="vibration.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Create</PrecompiledHeader>

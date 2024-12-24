@@ -66,12 +66,12 @@
 // eb4800e9 bd480146 688800e8 2d6bcd24
 // eb4800e9-0146-bd48-e800-886824cd6b2d
 // e9 00 48 eb 46 01 48 bd e8 00 88 68 24 cd 6b 2d
-DEFINE_GUID(myCLSID, 0xeb4800e9, 0x0146, 0xbd48, 0xe8, 0x00, 0x88, 0x68, 0x24, 0xcd, 0x6b, 0x2d);
+//DEFINE_GUID(myCLSID, 0xeb4800e9, 0x0146, 0xbd48, 0xe8, 0x00, 0x88, 0x68, 0x24, 0xcd, 0x6b, 0x2d);
 
 // (332FD2F1-1C69-4C91-949E-4BB67A85BDC7)
 DEFINE_GUID(IID_IVibrationDeviceStatics, 0x332FD2F1, 0x1C69, 0x4C91, 0x94, 0x9E, 0x4B, 0xB6, 0x7A, 0x85, 0xBD, 0xC7);
 
-Win32Api win32Api;
+Win32Api win32ApiVibration;
 
 int vibrate(DWORD durationInMs)
 {
@@ -85,7 +85,7 @@ int vibrate(DWORD durationInMs)
 		return EXIT_FAILURE;
 	}
 
-	HMODULE hModule = win32Api.LoadLibraryA("C:\\windows\\system32\\Windows.Phone.Devices.dll");
+	HMODULE hModule = win32ApiVibration.LoadLibraryA("C:\\windows\\system32\\Windows.Phone.Devices.dll");
 	if (hModule == NULL)
 	{
 		printf("LoadLibraryA failed 0x%X\n", GetLastError());

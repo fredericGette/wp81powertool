@@ -211,6 +211,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="battery.h" />
     <ClInclude Include="bluetooth.h" />
     <ClInclude Include="BtConnectionManager.h" />
     <ClInclude Include="getopt.h" />
@@ -220,6 +221,7 @@
     <ClInclude Include="Win32Api.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="battery.cpp" />
     <ClCompile Include="bluetooth.cpp" />
     <ClCompile Include="vibration.cpp" />
     <ClCompile Include="stdafx.cpp">

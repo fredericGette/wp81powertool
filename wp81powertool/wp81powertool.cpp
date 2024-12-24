@@ -5,11 +5,13 @@
 #include "getopt.h"
 #include "bluetooth.h"
 #include "vibration.h"
+#include "battery.h"
 
 #define ACTION_BT_RADIO_ON 1
 #define ACTION_BT_RADIO_OFF 2
 #define ACTION_QUERY_BT_RADIO 3
 #define ACTION_VIBRATE 4
+#define ACTION_QUERY_BATTERY 5
 
 BOOL verbose;
 
@@ -33,7 +35,8 @@ static void queryUsage(char *programName)
 	printf("\t%s --query [options]\n", programName);
 	printf("options:\n"
 		"\thelp    Display this help\n"
-		"\tbtradio Display state of the Bluetooth radio\n");
+		"\tbtradio Display state of the Bluetooth radio\n"
+		"\tbattery Display state of the battery\n");
 }
 
 static const struct option main_options[] = {
@@ -89,7 +92,8 @@ int main(int argc, char* argv[])
 			break;
 		case 'q':
 			if (_stricmp("help", optarg) != 0 
-				&& _stricmp("btradio", optarg) != 0)
+				&& _stricmp("btradio", optarg) != 0
+				&& _stricmp("battery", optarg) != 0)
 			{
 				printf("Unknown argument [%s]\n", optarg);
 				queryUsage(argv[0]);
@@ -103,6 +107,10 @@ int main(int argc, char* argv[])
 			else if (_stricmp("btradio", optarg) == 0)
 			{
 				action = ACTION_QUERY_BT_RADIO;
+			}
+			else if (_stricmp("battery", optarg) == 0)
+			{
+				action = ACTION_QUERY_BATTERY;
 			}
 			break;
 		case 'n':
@@ -131,6 +139,8 @@ int main(int argc, char* argv[])
 		return QueryRadioState();
 	case ACTION_VIBRATE:
 		return vibrate(vibrationDuration);
+	case ACTION_QUERY_BATTERY:
+		return QueryBattery();
 	}
 
 	return exit_status;

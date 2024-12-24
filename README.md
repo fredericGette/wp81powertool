@@ -16,7 +16,7 @@ Leverages the Windows Runtime "Windows.Phone.Devices.Notification.VibrationDevic
 
 ### Battery
 
-Leverages the Windows Runtime Windows.Phone.Devices.Power.Battery" interfaces to query the remaining charge of the battery.
+Leverages the Windows Runtime "Windows.Phone.Devices.Power.Battery" interfaces to query the remaining charge of the battery.
   
 ## Deployment
 

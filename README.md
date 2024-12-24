@@ -13,6 +13,10 @@ Leverages the COM BtConnectionManager interfaces to turn on/off the Bluetooth ra
 ### Vibration
 
 Leverages the Windows Runtime "Windows.Phone.Devices.Notification.VibrationDevice" interfaces to make your phone vibrate.
+
+### Battery
+
+Leverages the Windows Runtime Windows.Phone.Devices.Power.Battery" interfaces to query the remaining charge of the battery.
   
 ## Deployment
 

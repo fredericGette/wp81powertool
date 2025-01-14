@@ -6,12 +6,15 @@
 #include "bluetooth.h"
 #include "vibration.h"
 #include "battery.h"
+#include "oempanel.h"
 
 #define ACTION_BT_RADIO_ON 1
 #define ACTION_BT_RADIO_OFF 2
 #define ACTION_QUERY_BT_RADIO 3
 #define ACTION_VIBRATE 4
 #define ACTION_QUERY_BATTERY 5
+#define ACTION_OEM_PANEL 6
+#define ACTION_QUERY_OEM_PANEL 7
 
 BOOL verbose;
 
@@ -25,6 +28,7 @@ static void usage(char *programName)
 		"\t-v, --verbose             Increase verbosity\n"
 		"\t-b, --btradio {on|off}    Activate/Deactivate Bluetooth radio\n"
 		"\t-n, --vibrate {duration}	 Activate vibration during N milliseconds\n"
+		"\t-o, --oempanel            Nokia panel\n"	
 		"\t-q, --query {help|...}    Display \'query\' option usage\n");
 }
 
@@ -34,9 +38,10 @@ static void queryUsage(char *programName)
 		"Query usage:\n", programName);
 	printf("\t%s --query [options]\n", programName);
 	printf("options:\n"
-		"\thelp    Display this help\n"
-		"\tbtradio Display state of the Bluetooth radio\n"
-		"\tbattery Display state of the battery\n");
+		"\thelp     Display this help\n"
+		"\tbtradio  Display state of the Bluetooth radio\n"
+		"\tbattery  Display state of the battery\n"
+		"\toempanel Display Nokia panel information\n");
 }
 
 static const struct option main_options[] = {
@@ -44,6 +49,7 @@ static const struct option main_options[] = {
 	{ "verbose",   no_argument,       NULL, 'v' },
 	{ "btradio",   required_argument, NULL, 'b' },
 	{ "vibrate",   required_argument, NULL, 'n' },
+	{ "oempanel",  required_argument, NULL, 'o' },
 	{ "query",     required_argument, NULL, 'q' },
 	{}
 };
@@ -58,7 +64,7 @@ int main(int argc, char* argv[])
 		int opt;
 
 		opt = getopt_long(argc, argv,
-			"hvb:q:n:",
+			"hvb:q:n:o",
 			main_options, NULL);
 
 		if (opt < 0) {
@@ -91,14 +97,6 @@ int main(int argc, char* argv[])
 			}
 			break;
 		case 'q':
-			if (_stricmp("help", optarg) != 0 
-				&& _stricmp("btradio", optarg) != 0
-				&& _stricmp("battery", optarg) != 0)
-			{
-				printf("Unknown argument [%s]\n", optarg);
-				queryUsage(argv[0]);
-				return EXIT_FAILURE;
-			}
 			if (_stricmp("help", optarg) == 0)
 			{
 				queryUsage(argv[0]);
@@ -112,6 +110,16 @@ int main(int argc, char* argv[])
 			{
 				action = ACTION_QUERY_BATTERY;
 			}
+			else if (_stricmp("oempanel", optarg) == 0)
+			{
+				action = ACTION_QUERY_OEM_PANEL;
+			}
+			else
+			{
+				printf("Unknown argument [%s]\n", optarg);
+				queryUsage(argv[0]);
+				return EXIT_FAILURE;
+			}
 			break;
 		case 'n':
 			action = ACTION_VIBRATE;
@@ -122,6 +130,9 @@ int main(int argc, char* argv[])
 				queryUsage(argv[0]);
 				return EXIT_FAILURE;
 			}
+			break;
+		case 'o':
+			action = ACTION_OEM_PANEL;
 			break;
 		default:
 			usage(argv[0]);
@@ -141,6 +152,8 @@ int main(int argc, char* argv[])
 		return vibrate(vibrationDuration);
 	case ACTION_QUERY_BATTERY:
 		return QueryBattery();
+	case ACTION_QUERY_OEM_PANEL:
+		return InfoOemPanel();
 	}
 
 	return exit_status;

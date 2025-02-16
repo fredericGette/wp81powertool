@@ -24,7 +24,7 @@ Use some IoctlCodes of the "oempanel" driver.
 
 > [!NOTE]
 > The on/off action doesn't work when the screen times out.  
-> The app [WPTweaker](https://github.com/sensboston/WPTweaker) can add a new entry "never" in the dropdown list in order to deactivate this timeout.  
+> The app [WPTweaker](https://github.com/sensboston/WPTweaker) ([binary here](https://xdaforums.com/t/xap-source-wptweaker-registry-tweaker-for-wp8-1.3147272/)) can add a new entry "never" in the dropdown list in order to deactivate this timeout.  
 > ![Never](Capture03.PNG)
   
 ## Deployment

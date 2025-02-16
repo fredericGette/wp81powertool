@@ -17,6 +17,15 @@ Leverages the Windows Runtime "Windows.Phone.Devices.Notification.VibrationDevic
 ### Battery
 
 Leverages the Windows Runtime "Windows.Phone.Devices.Power.Battery" interfaces to query the remaining charge of the battery.
+
+### Screen
+
+Use some IoctlCodes of the "oempanel" driver.
+
+> [!NOTE]
+> The on/off action doesn't work when the screen times out.  
+> The app [WPTweaker](https://github.com/sensboston/WPTweaker) can add a new entry "never" in the dropdown list in order to deactivate this timeout.  
+> ![Never](Capture03.PNG)
   
 ## Deployment
 

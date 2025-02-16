@@ -13,8 +13,14 @@
 #define ACTION_QUERY_BT_RADIO 3
 #define ACTION_VIBRATE 4
 #define ACTION_QUERY_BATTERY 5
-#define ACTION_OEM_PANEL 6
-#define ACTION_QUERY_OEM_PANEL 7
+#define ACTION_QUERY_OEM_PANEL 6
+#define ACTION_LCD_ON 7
+#define ACTION_LCD_OFF 8
+#define ACTION_LCD_BRIGHTNESS_HIGH 9
+#define ACTION_LCD_BRIGHTNESS_MEDIUM 10
+#define ACTION_LCD_BRIGHTNESS_LOW 11
+#define ACTION_LCD_BRIGHTNESS_EXTRA_LOW 12
+
 
 BOOL verbose;
 
@@ -27,8 +33,9 @@ static void usage(char *programName)
 		"\t-h, --help                Show help options\n"
 		"\t-v, --verbose             Increase verbosity\n"
 		"\t-b, --btradio {on|off}    Activate/Deactivate Bluetooth radio\n"
-		"\t-n, --vibrate {duration}	 Activate vibration during N milliseconds\n"
-		"\t-o, --oempanel            Nokia panel\n"	
+		"\t-n, --vibrate {duration}  Activate vibration during N milliseconds\n"
+		"\t-s, --screen {on|off}     Switch on/off the LCD screen\n"	
+		"\t-l, --brightness {extra-low|low|medium|high} Set LCD brightness level\n"	
 		"\t-q, --query {help|...}    Display \'query\' option usage\n");
 }
 
@@ -41,7 +48,7 @@ static void queryUsage(char *programName)
 		"\thelp     Display this help\n"
 		"\tbtradio  Display state of the Bluetooth radio\n"
 		"\tbattery  Display state of the battery\n"
-		"\toempanel Display Nokia panel information\n");
+		"\toempanel Display Nokia LCD panel information\n");
 }
 
 static const struct option main_options[] = {
@@ -49,7 +56,8 @@ static const struct option main_options[] = {
 	{ "verbose",   no_argument,       NULL, 'v' },
 	{ "btradio",   required_argument, NULL, 'b' },
 	{ "vibrate",   required_argument, NULL, 'n' },
-	{ "oempanel",  required_argument, NULL, 'o' },
+	{ "screen",    required_argument, NULL, 's' },
+	{ "brigthness",required_argument, NULL, 'l' },
 	{ "query",     required_argument, NULL, 'q' },
 	{}
 };
@@ -64,7 +72,7 @@ int main(int argc, char* argv[])
 		int opt;
 
 		opt = getopt_long(argc, argv,
-			"hvb:q:n:o",
+			"hvb:q:n:s:l:",
 			main_options, NULL);
 
 		if (opt < 0) {
@@ -131,8 +139,46 @@ int main(int argc, char* argv[])
 				return EXIT_FAILURE;
 			}
 			break;
-		case 'o':
-			action = ACTION_OEM_PANEL;
+		case 's':
+			if (_stricmp("on", optarg) != 0 && _stricmp("off", optarg) != 0)
+			{
+				printf("Unknown argument [%s]\n", optarg);
+				usage(argv[0]);
+				return EXIT_FAILURE;
+			}
+			if (_stricmp("on", optarg) == 0)
+			{
+				action = ACTION_LCD_ON;
+			}
+			else
+			{
+				action = ACTION_LCD_OFF;
+			}
+			break;
+		case 'l':
+			if (_stricmp("extra-low", optarg) != 0 && _stricmp("low", optarg) != 0
+				&& _stricmp("medium", optarg) != 0 && _stricmp("high", optarg) != 0)
+			{
+				printf("Unknown argument [%s]\n", optarg);
+				usage(argv[0]);
+				return EXIT_FAILURE;
+			}
+			if (_stricmp("extra-low", optarg) == 0)
+			{
+				action = ACTION_LCD_BRIGHTNESS_EXTRA_LOW;
+			}
+			else if (_stricmp("low", optarg) == 0)
+			{
+				action = ACTION_LCD_BRIGHTNESS_LOW;
+			}
+			else if (_stricmp("medium", optarg) == 0)
+			{
+				action = ACTION_LCD_BRIGHTNESS_MEDIUM;
+			}
+			else
+			{
+				action = ACTION_LCD_BRIGHTNESS_HIGH;
+			}
 			break;
 		default:
 			usage(argv[0]);
@@ -154,6 +200,18 @@ int main(int argc, char* argv[])
 		return QueryBattery();
 	case ACTION_QUERY_OEM_PANEL:
 		return InfoOemPanel();
+	case ACTION_LCD_ON:
+		return ChangeLCDState(TRUE);
+	case ACTION_LCD_OFF:
+		return ChangeLCDState(FALSE);
+	case ACTION_LCD_BRIGHTNESS_EXTRA_LOW:
+		return ChangeBrightness(1);
+	case ACTION_LCD_BRIGHTNESS_LOW:
+		return ChangeBrightness(3);
+	case ACTION_LCD_BRIGHTNESS_MEDIUM:
+		return ChangeBrightness(4);
+	case ACTION_LCD_BRIGHTNESS_HIGH:
+		return ChangeBrightness(5);
 	}
 
 	return exit_status;

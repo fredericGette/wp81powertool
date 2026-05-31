@@ -516,7 +516,7 @@ int InfoOemPanel()
 	HANDLE hDevice = CreateFileA("\\\\?\\ACPI#NOKIA_PANEL#0#{0d4a3f63-0d08-49a1-b91c-c60576894174}", GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
 	if (hDevice == INVALID_HANDLE_VALUE)
 	{
-		printf("Failed to open device! 0x%08X\n", GetLastError());
+		printf("Failed to open device! 0x%08lX\n", GetLastError());
 		return 1;
 	}
 
@@ -525,28 +525,28 @@ int InfoOemPanel()
 	BOOL success = DeviceIoControl(hDevice, IOCTL_GET_PANEL_INFO_SIZE, NULL, 0, &panelInfoSize, 4, &returned, NULL);
 	if (!success)
 	{
-		printf("Failed to send DeviceIoControl! 0x%08X", GetLastError());
+		printf("Failed to send DeviceIoControl! 0x%08lX", GetLastError());
 		CloseHandle(hDevice);
 		return 1;
 	}
-	if (verbose) printf("Panel info size: %d\n", panelInfoSize);
+	if (verbose) printf("Panel info size: %lu\n", panelInfoSize);
 
 	PVOID pOutputBuffer = malloc(panelInfoSize); //8192
 	success = DeviceIoControl(hDevice, IOCTL_PRINT_PANEL_INFO, NULL, 0, pOutputBuffer, panelInfoSize, &returned, NULL);
 	if (!success)
 	{
-		printf("Failed to send DeviceIoControl! 0x%08X", GetLastError());
+		printf("Failed to send DeviceIoControl! 0x%08lX", GetLastError());
 		free(pOutputBuffer);
 		CloseHandle(hDevice);
 		return 1;
 	}
 	if (verbose)
 	{
-		printf("returned=%d\n", returned);
+		printf("returned=%lu\n", returned);
 		printBufferContent(pOutputBuffer, returned);
 	}
 	((CHAR*)pOutputBuffer)[returned] = '\0';
-	printf("%s", pOutputBuffer);
+	printf("%s", (char*)pOutputBuffer);
 
 	free(pOutputBuffer);
 	CloseHandle(hDevice);
@@ -559,7 +559,7 @@ int ChangeLCDState(BOOL TurnOn)
 	HANDLE hDevice = CreateFileA("\\\\?\\ACPI#NOKIA_PANEL#0#{0d4a3f63-0d08-49a1-b91c-c60576894174}", GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
 	if (hDevice == INVALID_HANDLE_VALUE)
 	{
-		printf("Failed to open device! 0x%08X\n", GetLastError());
+		printf("Failed to open device! 0x%08lX\n", GetLastError());
 		return 1;
 	}
 
@@ -577,7 +577,7 @@ int ChangeLCDState(BOOL TurnOn)
 	BOOL success = DeviceIoControl(hDevice, IOCTL_LCD_POWER_ON_OFF, pInputBuffer, 4, pOutputBuffer, 4, &returned, NULL);
 	if (!success)
 	{
-		printf("Failed to send DeviceIoControl! 0x%08X", GetLastError());
+		printf("Failed to send DeviceIoControl! 0x%08lX", GetLastError());
 		free(pInputBuffer);
 		free(pOutputBuffer);
 		CloseHandle(hDevice);
@@ -585,7 +585,7 @@ int ChangeLCDState(BOOL TurnOn)
 	}
 	if (verbose)
 	{
-		printf("returned=%d\n", returned);
+		printf("returned=%lu\n", returned);
 		if (returned > 0)
 		{
 			printf("Output:\n");
@@ -623,7 +623,7 @@ int ChangeBrightness(int value)
 		retCode = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Autobrightness", 0, KEY_ALL_ACCESS, &absKey);
 		if (retCode != ERROR_SUCCESS)
 		{
-			printf("Error RegOpenKeyExW : %d\n", retCode);
+			printf("Error RegOpenKeyExW : %lu\n", retCode);
 			return 1;
 		}
 
@@ -631,7 +631,7 @@ int ChangeBrightness(int value)
 		retCode = RegSetValueExW(absKey, L"ABSMonitorControl", NULL, REG_DWORD, (BYTE*)&autoBrightness, 4);
 		if (retCode != ERROR_SUCCESS)
 		{
-			printf("Error RegSetValueExW 'ABSMonitorControl': %d\n", retCode);
+			printf("Error RegSetValueExW 'ABSMonitorControl': %lu\n", retCode);
 			return 1;
 		}
 
@@ -639,14 +639,14 @@ int ChangeBrightness(int value)
 		retCode = RegSetValueExW(absKey, L"ABSManualBrightness", NULL, REG_DWORD, (BYTE*)&brightness, 4);
 		if (retCode != ERROR_SUCCESS)
 		{
-			printf("Error RegSetValueExW 'ABSManualBrightness': %d\n", retCode);
+			printf("Error RegSetValueExW 'ABSManualBrightness': %lu\n", retCode);
 			return 1;
 		}
 
 		retCode = RegCloseKey(absKey);
 		if (retCode != ERROR_SUCCESS)
 		{
-			printf("Error RegCloseKey : %d\n", retCode);
+			printf("Error RegCloseKey : %lu\n", retCode);
 			return 1;
 		}
 	}
@@ -654,7 +654,7 @@ int ChangeBrightness(int value)
 	HANDLE hDevice = CreateFileA("\\\\?\\ACPI#NOKIA_PANEL#0#{0d4a3f63-0d08-49a1-b91c-c60576894174}", GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
 	if (hDevice == INVALID_HANDLE_VALUE)
 	{
-		printf("Failed to open device! 0x%08X\n", GetLastError());
+		printf("Failed to open device! 0x%08lX\n", GetLastError());
 		return 1;
 	}
 
@@ -687,7 +687,7 @@ int ChangeBrightness(int value)
 	BOOL success = DeviceIoControl(hDevice, IOCTL_SET_USECASES_0, pInputBuffer, 4, NULL, 0, &returned, NULL);
 	if (!success)
 	{
-		printf("Failed to send DeviceIoControl! 0x%08X", GetLastError());
+		printf("Failed to send DeviceIoControl! 0x%08lX", GetLastError());
 		free(pInputBuffer);
 		free(pOutputBuffer);
 		CloseHandle(hDevice);
@@ -695,7 +695,7 @@ int ChangeBrightness(int value)
 	}
 	if (verbose)
 	{
-		printf("returned=%d\n", returned);
+		printf("returned=%lu\n", returned);
 		if (returned > 0)
 		{
 			printf("Output:\n");

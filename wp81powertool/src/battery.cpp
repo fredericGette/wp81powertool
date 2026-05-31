@@ -15,21 +15,21 @@ int QueryBattery()
 	HRESULT result = RoInitialize(RO_INIT_MULTITHREADED);
 	if (FAILED(result))
 	{
-		printf("RoInitialize failed 0x%X\n", result);
+		printf("RoInitialize failed 0x%lX\n", result);
 		return EXIT_FAILURE;
 	}
 
 	HMODULE hModule = win32ApiBattery.LoadLibraryA("C:\\windows\\system32\\Windows.Phone.Devices.dll");
 	if (hModule == NULL)
 	{
-		printf("LoadLibraryA failed 0x%X\n", GetLastError());
+		printf("LoadLibraryA failed 0x%lX\n", GetLastError());
 		return EXIT_FAILURE;
 	}
 
 	dllAbstractionFactoryFp = (HRESULT(WINAPI *)(HSTRING, IActivationFactory**))GetProcAddress(hModule, "DllGetActivationFactory");
 	if (dllAbstractionFactoryFp == NULL)
 	{
-		printf("GetProcAddress failed 0x%X\n", GetLastError());
+		printf("GetProcAddress failed 0x%lX\n", GetLastError());
 		return EXIT_FAILURE;
 	}
 
@@ -37,7 +37,7 @@ int QueryBattery()
 	HRESULT hr = WindowsCreateString(L"Windows.Phone.Devices.Power.Battery", 35, &activableClassName);
 	if (FAILED(hr))
 	{
-		printf("WindowsCreateString failed 0x%X\n", hr);
+		printf("WindowsCreateString failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
@@ -45,7 +45,7 @@ int QueryBattery()
 	hr = (dllAbstractionFactoryFp)(activableClassName, &pActivationFactory);
 	if (FAILED(hr))
 	{
-		printf("DllGetActivationFactory failed 0x%X\n", hr);
+		printf("DllGetActivationFactory failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
@@ -53,7 +53,7 @@ int QueryBattery()
 	hr = pActivationFactory->QueryInterface(IID_IBatteryStatics, (void**)& piBatteryStatics);
 	if (FAILED(hr))
 	{
-		printf("QueryInterface failed 0x%X\n", hr);
+		printf("QueryInterface failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
@@ -61,7 +61,7 @@ int QueryBattery()
 	hr = piBatteryStatics->GetDefault(&piBattery);
 	if (FAILED(hr))
 	{
-		printf("GetDefault battery failed 0x%X\n", hr);
+		printf("GetDefault battery failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
@@ -69,7 +69,7 @@ int QueryBattery()
 	hr = piBattery->get_RemainingChargePercent(&value);
 	if (FAILED(hr))
 	{
-		printf("get_RemainingChargePercent failed 0x%X\n", hr);
+		printf("get_RemainingChargePercent failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
@@ -78,14 +78,14 @@ int QueryBattery()
 	hr = piBattery->Release();
 	if (FAILED(hr))
 	{
-		printf("Release of battery failed 0x%X\n", hr);
+		printf("Release of battery failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
 	piBatteryStatics->Release();
 	if (FAILED(hr))
 	{
-		printf("Release of battery statics failed 0x%X\n", hr);
+		printf("Release of battery statics failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 

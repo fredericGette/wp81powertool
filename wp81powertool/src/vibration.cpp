@@ -81,21 +81,21 @@ int vibrate(DWORD durationInMs)
 	HRESULT result = RoInitialize(RO_INIT_MULTITHREADED);
 	if (FAILED(result))
 	{
-		printf("RoInitialize failed 0x%X\n", result);
+		printf("RoInitialize failed 0x%lX\n", result);
 		return EXIT_FAILURE;
 	}
 
 	HMODULE hModule = win32ApiVibration.LoadLibraryA("C:\\windows\\system32\\Windows.Phone.Devices.dll");
 	if (hModule == NULL)
 	{
-		printf("LoadLibraryA failed 0x%X\n", GetLastError());
+		printf("LoadLibraryA failed 0x%lX\n", GetLastError());
 		return EXIT_FAILURE;
 	}
 
 	dllAbstractionFactoryFp = (HRESULT(WINAPI *)(HSTRING, IActivationFactory**))GetProcAddress(hModule, "DllGetActivationFactory");
 	if (dllAbstractionFactoryFp == NULL)
 	{
-		printf("GetProcAddress failed 0x%X\n", GetLastError());
+		printf("GetProcAddress failed 0x%lX\n", GetLastError());
 		return EXIT_FAILURE;
 	}
 
@@ -103,7 +103,7 @@ int vibrate(DWORD durationInMs)
 	HRESULT hr = WindowsCreateString(L"Windows.Phone.Devices.Notification.VibrationDevice", 50, &activableClassName);
 	if (FAILED(hr))
 	{
-		printf("WindowsCreateString failed 0x%X\n", hr);
+		printf("WindowsCreateString failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
@@ -111,7 +111,7 @@ int vibrate(DWORD durationInMs)
 	hr = (dllAbstractionFactoryFp)(activableClassName, &pActivationFactory);
 	if (FAILED(hr))
 	{
-		printf("DllGetActivationFactory failed 0x%X\n", hr);
+		printf("DllGetActivationFactory failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
@@ -119,7 +119,7 @@ int vibrate(DWORD durationInMs)
 	hr = pActivationFactory->QueryInterface(IID_IVibrationDeviceStatics, (void**)& piVibrationDeviceStatics);
 	if (FAILED(hr))
 	{
-		printf("QueryInterface failed 0x%X\n", hr);
+		printf("QueryInterface failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
@@ -127,7 +127,7 @@ int vibrate(DWORD durationInMs)
 	hr = piVibrationDeviceStatics->GetDefault(&piVibrationDevice);
 	if (FAILED(hr))
 	{
-		printf("GetDefault vibration device failed 0x%X\n", hr);
+		printf("GetDefault vibration device failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
@@ -136,7 +136,7 @@ int vibrate(DWORD durationInMs)
 	hr = piVibrationDevice->Vibrate(tsDuration);
 	if (FAILED(hr))
 	{
-		printf("Vibrate failed 0x%X\n", hr);
+		printf("Vibrate failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
@@ -145,14 +145,14 @@ int vibrate(DWORD durationInMs)
 	hr = piVibrationDevice->Release();
 	if (FAILED(hr))
 	{
-		printf("Release of vibration device failed 0x%X\n", hr);
+		printf("Release of vibration device failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 
 	piVibrationDeviceStatics->Release();
 	if (FAILED(hr))
 	{
-		printf("Release of vibration device statics failed 0x%X\n", hr);
+		printf("Release of vibration device statics failed 0x%lX\n", hr);
 		return EXIT_FAILURE;
 	}
 

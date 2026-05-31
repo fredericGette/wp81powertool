@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
 			vibrationDuration = atoi(optarg);
 			if (vibrationDuration <= 0)
 			{
-				printf("Vibration duration must be a positive integer.\n", optarg);
+				printf("Vibration duration must be a positive integer [%s].\n", optarg);
 				queryUsage(argv[0]);
 				return EXIT_FAILURE;
 			}

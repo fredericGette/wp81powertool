@@ -7,6 +7,7 @@
 #include "vibration.h"
 #include "battery.h"
 #include "oempanel.h"
+#include "rtc.h"
 
 #define ACTION_BT_RADIO_ON 1
 #define ACTION_BT_RADIO_OFF 2
@@ -20,6 +21,9 @@
 #define ACTION_LCD_BRIGHTNESS_MEDIUM 10
 #define ACTION_LCD_BRIGHTNESS_LOW 11
 #define ACTION_LCD_BRIGHTNESS_EXTRA_LOW 12
+#define ACTION_RTC_ALARM_SET 13
+#define ACTION_RTC_ALARM_UNSET 14
+#define ACTION_QUERY_RTC_ALARM 15
 
 
 BOOL verbose;
@@ -36,6 +40,7 @@ static void usage(char *programName)
 		"\t-n, --vibrate {duration}  Activate vibration during N milliseconds\n"
 		"\t-s, --screen {on|off}     Switch on/off the LCD screen\n"	
 		"\t-l, --brightness {extra-low|low|medium|high} Set LCD brightness level\n"	
+		"\t-a, --alarm {seconds|off} Set the RTC alarm N seconds from now, or unset it\n"
 		"\t-q, --query {help|...}    Display \'query\' option usage\n");
 }
 
@@ -48,7 +53,8 @@ static void queryUsage(char *programName)
 		"\thelp     Display this help\n"
 		"\tbtradio  Display state of the Bluetooth radio\n"
 		"\tbattery  Display state of the battery\n"
-		"\toempanel Display Nokia LCD panel information\n");
+		"\toempanel Display Nokia LCD panel information\n"
+		"\trtcalarm Display RTC time and alarm\n");
 }
 
 static const struct option main_options[] = {
@@ -58,6 +64,7 @@ static const struct option main_options[] = {
 	{ "vibrate",   required_argument, NULL, 'n' },
 	{ "screen",    required_argument, NULL, 's' },
 	{ "brigthness",required_argument, NULL, 'l' },
+	{ "alarm",     required_argument, NULL, 'a' },
 	{ "query",     required_argument, NULL, 'q' },
 	{}
 };
@@ -67,12 +74,13 @@ int main(int argc, char* argv[])
 	int exit_status = EXIT_SUCCESS;
 	DWORD action;
 	DWORD vibrationDuration;
+	DWORD alarmDelay;
 
 	for (;;) {
 		int opt;
 
 		opt = getopt_long(argc, argv,
-			"hvb:q:n:s:l:",
+			"hvb:q:n:s:l:a:",
 			main_options, NULL);
 
 		if (opt < 0) {
@@ -121,6 +129,10 @@ int main(int argc, char* argv[])
 			else if (_stricmp("oempanel", optarg) == 0)
 			{
 				action = ACTION_QUERY_OEM_PANEL;
+			}
+			else if (_stricmp("rtcalarm", optarg) == 0)
+			{
+				action = ACTION_QUERY_RTC_ALARM;
 			}
 			else
 			{
@@ -180,6 +192,24 @@ int main(int argc, char* argv[])
 				action = ACTION_LCD_BRIGHTNESS_HIGH;
 			}
 			break;
+		case 'a':
+			if (_stricmp("off", optarg) == 0)
+			{
+				action = ACTION_RTC_ALARM_UNSET;
+			}
+			else
+			{
+				char *end;
+				alarmDelay = strtoul(optarg, &end, 10);
+				if (*optarg < '0' || *optarg > '9' || *end != '\0' || alarmDelay == 0)
+				{
+					printf("Alarm delay must be a positive number of seconds or 'off' [%s].\n", optarg);
+					usage(argv[0]);
+					return EXIT_FAILURE;
+				}
+				action = ACTION_RTC_ALARM_SET;
+			}
+			break;
 		default:
 			usage(argv[0]);
 			return EXIT_FAILURE;
@@ -212,6 +242,12 @@ int main(int argc, char* argv[])
 		return ChangeBrightness(4);
 	case ACTION_LCD_BRIGHTNESS_HIGH:
 		return ChangeBrightness(5);
+	case ACTION_RTC_ALARM_SET:
+		return SetRtcAlarm(alarmDelay);
+	case ACTION_RTC_ALARM_UNSET:
+		return UnsetRtcAlarm();
+	case ACTION_QUERY_RTC_ALARM:
+		return QueryRtcAlarm();
 	}
 
 	return exit_status;

@@ -1,7 +1,7 @@
 # Wp81Powertool
 
 Adds some other usages compared to the existing powertool.exe of Windows Phone 8.1  
-Uss vscode+llvm+cmake to build the .exe  
+Use vscode+llvm+cmake to build the .exe  
 
 ## Usage
 

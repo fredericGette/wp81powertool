@@ -37,7 +37,8 @@ static void usage(char *programName)
 		"\t-h, --help                Show help options\n"
 		"\t-v, --verbose             Increase verbosity\n"
 		"\t-b, --btradio {on|off}    Activate/Deactivate Bluetooth radio\n"
-		"\t-n, --vibrate {duration}  Activate vibration during N milliseconds\n"
+		"\t-n, --vibrate {mV} {ms}   Activate vibration with a drive voltage of 1200-3100 mV\n"
+		"\t                          (steps of 100) during N milliseconds; 0 mV = silence\n"
 		"\t-s, --screen {on|off}     Switch on/off the LCD screen\n"	
 		"\t-l, --brightness {extra-low|low|medium|high} Set LCD brightness level\n"	
 		"\t-a, --alarm {seconds|off} Set the RTC alarm N seconds from now, or unset it\n"
@@ -73,6 +74,7 @@ int main(int argc, char* argv[])
 {
 	int exit_status = EXIT_SUCCESS;
 	DWORD action;
+	DWORD vibrationVoltage;
 	DWORD vibrationDuration;
 	DWORD alarmDelay;
 
@@ -142,15 +144,34 @@ int main(int argc, char* argv[])
 			}
 			break;
 		case 'n':
-			action = ACTION_VIBRATE;
-			vibrationDuration = atoi(optarg);
-			if (vibrationDuration <= 0)
+		{
+			// Second parameter of the option: the duration
+			if (optind >= argc)
 			{
-				printf("Vibration duration must be a positive integer [%s].\n", optarg);
-				queryUsage(argv[0]);
+				printf("Missing vibration duration.\n");
+				usage(argv[0]);
 				return EXIT_FAILURE;
 			}
+			char *durationArg = argv[optind++];
+			char *end;
+			vibrationVoltage = strtoul(optarg, &end, 10);
+			if (*optarg < '0' || *optarg > '9' || *end != '\0'
+				|| (vibrationVoltage != 0 && (vibrationVoltage < VIB_VOLTAGE_MIN_MV || vibrationVoltage > VIB_VOLTAGE_MAX_MV || vibrationVoltage % 100 != 0)))
+			{
+				printf("Vibration voltage must be 0 or a number of millivolts between %d and %d, in steps of 100 [%s].\n", VIB_VOLTAGE_MIN_MV, VIB_VOLTAGE_MAX_MV, optarg);
+				usage(argv[0]);
+				return EXIT_FAILURE;
+			}
+			vibrationDuration = strtoul(durationArg, &end, 10);
+			if (*durationArg < '0' || *durationArg > '9' || *end != '\0' || vibrationDuration == 0)
+			{
+				printf("Vibration duration must be a positive number of milliseconds [%s].\n", durationArg);
+				usage(argv[0]);
+				return EXIT_FAILURE;
+			}
+			action = ACTION_VIBRATE;
 			break;
+		}
 		case 's':
 			if (_stricmp("on", optarg) != 0 && _stricmp("off", optarg) != 0)
 			{
@@ -225,7 +246,7 @@ int main(int argc, char* argv[])
 	case ACTION_QUERY_BT_RADIO:
 		return QueryRadioState();
 	case ACTION_VIBRATE:
-		return vibrate(vibrationDuration);
+		return vibrate(vibrationVoltage, vibrationDuration);
 	case ACTION_QUERY_BATTERY:
 		return QueryBattery();
 	case ACTION_QUERY_OEM_PANEL:

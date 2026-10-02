@@ -13,7 +13,8 @@ Leverages the COM BtConnectionManager interfaces to turn on/off the Bluetooth ra
 
 ### Vibration
 
-Leverages the Windows Runtime "Windows.Phone.Devices.Notification.VibrationDevice" interfaces to make your phone vibrate.
+Uses the IoctlCode IOCTL_PM_VIB_CONTROL_REGISTER of the Qualcomm PMIC driver (`\\.\QCOMPMIC`) to make your phone vibrate with a given drive voltage (1200-3100 mV, in steps of 100 mV) during a given number of milliseconds. A voltage of 0 keeps the motor off during the given duration (a silence).  
+Example: `wp81powertool.exe --vibrate 2500 500`
 
 ### Battery
 

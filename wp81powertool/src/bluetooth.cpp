@@ -230,7 +230,7 @@ int ChangeRadioState(BOOL TurnOn)
 	HRESULT result = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 	if (FAILED(result))
 	{
-		printf("CoInitializeEx failed 0x%X\n", result);
+		printf("CoInitializeEx failed 0x%lX\n", result);
 		return EXIT_FAILURE;
 	}
 
@@ -249,7 +249,7 @@ int ChangeRadioState(BOOL TurnOn)
 		IID_IBtConnectionObserver, (void **)&pIBtConnectionObserver);
 	if (FAILED(result))
 	{
-		printf("CoCreateInstance IBtConnectionObserver failed 0x%X\n", result);
+		printf("CoCreateInstance IBtConnectionObserver failed 0x%lX\n", result);
 		return EXIT_FAILURE;
 	}
 
@@ -273,7 +273,7 @@ int ChangeRadioState(BOOL TurnOn)
 		IID_IBtRadioController, (void **)&pIBtRadioController);
 	if (FAILED(result))
 	{
-		printf("CoCreateInstance IBtRadioController failed 0x%X\n", result);
+		printf("CoCreateInstance IBtRadioController failed 0x%lX\n", result);
 		return EXIT_FAILURE;
 	}
 
@@ -281,7 +281,7 @@ int ChangeRadioState(BOOL TurnOn)
 	result = pIBtRadioController->EnableBluetoothRadio(TurnOn ? true : false, NULL, NULL);
 	if (FAILED(result))
 	{
-		printf("EnableBluetoothRadio failed 0x%X\n", result);
+		printf("EnableBluetoothRadio failed 0x%lX\n", result);
 		return EXIT_FAILURE;
 	}
 	ResetEvent(hRadioStateChanged);
@@ -325,7 +325,7 @@ int ChangeRadioState(BOOL TurnOn)
 	result = pIBtConnectionObserver->UnregisterCallback(registrationHandle);
 	if (FAILED(result))
 	{
-		printf("UnregisterCallback failed 0x%X\n", result);
+		printf("UnregisterCallback failed 0x%lX\n", result);
 		exit_status = EXIT_FAILURE;
 	}
 
@@ -334,7 +334,7 @@ int ChangeRadioState(BOOL TurnOn)
 	result = pIBtRadioController->SynchronousShutdown(1000);
 	if (FAILED(result))
 	{
-		printf("SynchronousShutdown failed 0x%X\n", result);
+		printf("SynchronousShutdown failed 0x%lX\n", result);
 		exit_status = EXIT_FAILURE;
 	}
 
@@ -353,7 +353,7 @@ int QueryRadioState()
 	HRESULT result = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 	if (FAILED(result))
 	{
-		printf("CoInitializeEx failed 0x%X\n", result);
+		printf("CoInitializeEx failed 0x%lX\n", result);
 		return EXIT_FAILURE;
 	}
 
@@ -372,7 +372,7 @@ int QueryRadioState()
 		IID_IBtConnectionObserver, (void **)&pIBtConnectionObserver);
 	if (FAILED(result))
 	{
-		printf("CoCreateInstance IBtConnectionObserver failed 0x%X\n", result);
+		printf("CoCreateInstance IBtConnectionObserver failed 0x%lX\n", result);
 		return EXIT_FAILURE;
 	}
 
@@ -398,7 +398,7 @@ int QueryRadioState()
 	result = pIBtConnectionObserver->UnregisterCallback(registrationHandle);
 	if (FAILED(result))
 	{
-		printf("UnregisterCallback failed 0x%X\n", result);
+		printf("UnregisterCallback failed 0x%lX\n", result);
 		exit_status = EXIT_FAILURE;
 	}
 

@@ -22,7 +22,8 @@ Leverages the Windows Runtime "Windows.Phone.Devices.Power.Battery" interfaces t
 
 ### Screen
 
-Use some IoctlCodes of the "oempanel" driver.
+Use some IoctlCodes of the "oempanel" driver.  
+`--screen unlock` leverages the Windows Runtime "Windows.Phone.System.SystemProtection" interfaces to dismiss the lock screen (see [wp81daylimit](https://github.com/fredericGette/wp81daylimit)).
 
 > [!NOTE]
 > The on/off action doesn't work when the screen times out.  
@@ -35,7 +36,7 @@ Example of result from the `--query oempanel`. This report is entirely generated
 ### RTC alarm
 
 Use some IoctlCodes of the Qualcomm PMIC driver "qcpmic8930" (`\\.\QCOMPMIC`), see [wp81PmicTool](https://github.com/fredericGette/wp81PmicTool).  
-`--alarm {seconds}` sets the alarm 0 of the PMIC RTC N seconds from now (`IOCTL_PM_RTC_ENABLE_ALARM`), `--alarm off` unsets it (`IOCTL_PM_RTC_DISABLE_ALARM`), and `--query rtcalarm` displays the RTC time, the alarm time and the alarm status.
+`--alarm {seconds}` sets the alarm 0 of the PMIC RTC N seconds from now (`IOCTL_PM_RTC_ENABLE_ALARM`), `--alarm {days} {hh:mm:ss}` sets it N days from today (0 = today) at the given local time, `--alarm off` unsets it (`IOCTL_PM_RTC_DISABLE_ALARM`), and `--query rtcalarm` displays the RTC time, the alarm time and the alarm status.
   
 ## Deployment
 

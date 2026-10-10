@@ -6,5 +6,6 @@ extern "C" {
 }
 
 int SetRtcAlarm(DWORD delayInSeconds);
+int SetRtcAlarmAt(DWORD days, DWORD hour, DWORD minute, DWORD second);
 int UnsetRtcAlarm();
 int QueryRtcAlarm();

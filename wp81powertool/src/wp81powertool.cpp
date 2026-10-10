@@ -8,6 +8,7 @@
 #include "battery.h"
 #include "oempanel.h"
 #include "rtc.h"
+#include "screenlock.h"
 
 #define ACTION_BT_RADIO_ON 1
 #define ACTION_BT_RADIO_OFF 2
@@ -24,6 +25,8 @@
 #define ACTION_RTC_ALARM_SET 13
 #define ACTION_RTC_ALARM_UNSET 14
 #define ACTION_QUERY_RTC_ALARM 15
+#define ACTION_SCREEN_UNLOCK 16
+#define ACTION_RTC_ALARM_SET_AT 17
 
 
 BOOL verbose;
@@ -39,9 +42,10 @@ static void usage(char *programName)
 		"\t-b, --btradio {on|off}    Activate/Deactivate Bluetooth radio\n"
 		"\t-n, --vibrate {mV} {ms}   Activate vibration with a drive voltage of 1200-3100 mV\n"
 		"\t                          (steps of 100) during N milliseconds; 0 mV = silence\n"
-		"\t-s, --screen {on|off}     Switch on/off the LCD screen\n"	
+		"\t-s, --screen {on|off|unlock} Switch on/off the LCD screen, or unlock it\n"
 		"\t-l, --brightness {extra-low|low|medium|high} Set LCD brightness level\n"	
 		"\t-a, --alarm {seconds|off} Set the RTC alarm N seconds from now, or unset it\n"
+		"\t-a, --alarm {days} {hh:mm:ss} Set the RTC alarm N days from today (0 = today) at the given time\n"
 		"\t-q, --query {help|...}    Display \'query\' option usage\n");
 }
 
@@ -56,6 +60,35 @@ static void queryUsage(char *programName)
 		"\tbattery  Display state of the battery\n"
 		"\toempanel Display Nokia LCD panel information\n"
 		"\trtcalarm Display RTC time and alarm\n");
+}
+
+// Parses a time of the day "hh:mm:ss" (24-hour clock).
+static BOOL ParseTime(const char *text, DWORD *hour, DWORD *minute, DWORD *second)
+{
+	DWORD values[3];
+	const char *p = text;
+	for (int i = 0; i < 3; i++)
+	{
+		if (*p < '0' || *p > '9')
+		{
+			return FALSE;
+		}
+		char *end;
+		values[i] = strtoul(p, &end, 10);
+		if (end - p > 2 || *end != (i < 2 ? ':' : '\0'))
+		{
+			return FALSE;
+		}
+		p = end + 1;
+	}
+	if (values[0] > 23 || values[1] > 59 || values[2] > 59)
+	{
+		return FALSE;
+	}
+	*hour = values[0];
+	*minute = values[1];
+	*second = values[2];
+	return TRUE;
 }
 
 static const struct option main_options[] = {
@@ -77,6 +110,7 @@ int main(int argc, char* argv[])
 	DWORD vibrationVoltage;
 	DWORD vibrationDuration;
 	DWORD alarmDelay;
+	DWORD alarmDays, alarmHour, alarmMinute, alarmSecond;
 
 	for (;;) {
 		int opt;
@@ -173,7 +207,7 @@ int main(int argc, char* argv[])
 			break;
 		}
 		case 's':
-			if (_stricmp("on", optarg) != 0 && _stricmp("off", optarg) != 0)
+			if (_stricmp("on", optarg) != 0 && _stricmp("off", optarg) != 0 && _stricmp("unlock", optarg) != 0)
 			{
 				printf("Unknown argument [%s]\n", optarg);
 				usage(argv[0]);
@@ -182,6 +216,10 @@ int main(int argc, char* argv[])
 			if (_stricmp("on", optarg) == 0)
 			{
 				action = ACTION_LCD_ON;
+			}
+			else if (_stricmp("unlock", optarg) == 0)
+			{
+				action = ACTION_SCREEN_UNLOCK;
 			}
 			else
 			{
@@ -222,13 +260,29 @@ int main(int argc, char* argv[])
 			{
 				char *end;
 				alarmDelay = strtoul(optarg, &end, 10);
-				if (*optarg < '0' || *optarg > '9' || *end != '\0' || alarmDelay == 0)
+				if (*optarg < '0' || *optarg > '9' || *end != '\0')
 				{
-					printf("Alarm delay must be a positive number of seconds or 'off' [%s].\n", optarg);
+					printf("Alarm must be a number of seconds, a number of days followed by hh:mm:ss, or 'off' [%s].\n", optarg);
 					usage(argv[0]);
 					return EXIT_FAILURE;
 				}
-				action = ACTION_RTC_ALARM_SET;
+				// Optional second parameter of the option: the time of the day
+				if (optind < argc && ParseTime(argv[optind], &alarmHour, &alarmMinute, &alarmSecond))
+				{
+					optind++;
+					alarmDays = alarmDelay;
+					action = ACTION_RTC_ALARM_SET_AT;
+				}
+				else if (alarmDelay == 0)
+				{
+					printf("Alarm delay must be a positive number of seconds [%s].\n", optarg);
+					usage(argv[0]);
+					return EXIT_FAILURE;
+				}
+				else
+				{
+					action = ACTION_RTC_ALARM_SET;
+				}
 			}
 			break;
 		default:
@@ -255,6 +309,8 @@ int main(int argc, char* argv[])
 		return ChangeLCDState(TRUE);
 	case ACTION_LCD_OFF:
 		return ChangeLCDState(FALSE);
+	case ACTION_SCREEN_UNLOCK:
+		return UnlockScreen();
 	case ACTION_LCD_BRIGHTNESS_EXTRA_LOW:
 		return ChangeBrightness(1);
 	case ACTION_LCD_BRIGHTNESS_LOW:
@@ -265,6 +321,8 @@ int main(int argc, char* argv[])
 		return ChangeBrightness(5);
 	case ACTION_RTC_ALARM_SET:
 		return SetRtcAlarm(alarmDelay);
+	case ACTION_RTC_ALARM_SET_AT:
+		return SetRtcAlarmAt(alarmDays, alarmHour, alarmMinute, alarmSecond);
 	case ACTION_RTC_ALARM_UNSET:
 		return UnsetRtcAlarm();
 	case ACTION_QUERY_RTC_ALARM:

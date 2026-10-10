@@ -83,6 +83,32 @@ int SetRtcAlarm(DWORD delayInSeconds)
 	return EXIT_SUCCESS;
 }
 
+int SetRtcAlarmAt(DWORD days, DWORD hour, DWORD minute, DWORD second)
+{
+	// The PMIC RTC is not synchronized with the system clock, so the target is converted into
+	// a delay from the current local time, and the delay is then applied relative to the RTC time.
+	SYSTEMTIME now;
+	GetLocalTime(&now);
+	LONGLONG nowSeconds = now.wHour * 3600 + now.wMinute * 60 + now.wSecond;
+	LONGLONG targetSeconds = (LONGLONG)days * 86400 + hour * 3600 + minute * 60 + second;
+	LONGLONG delay = targetSeconds - nowSeconds;
+
+	if (verbose) printf("Local time: %02u:%02u:%02u\n", now.wHour, now.wMinute, now.wSecond);
+	if (delay <= 0)
+	{
+		printf("Alarm time %02lu:%02lu:%02lu in %lu day(s) is not in the future\n", hour, minute, second, days);
+		return EXIT_FAILURE;
+	}
+	if (delay > 0xFFFFFFFE)
+	{
+		printf("Alarm time is too far in the future\n");
+		return EXIT_FAILURE;
+	}
+
+	printf("RTC alarm in %lu day(s) at %02lu:%02lu:%02lu\n", days, hour, minute, second);
+	return SetRtcAlarm((DWORD)delay);
+}
+
 int UnsetRtcAlarm()
 {
 	HANDLE hDevice = OpenPmic();

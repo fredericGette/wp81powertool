@@ -9,6 +9,7 @@
 #include "oempanel.h"
 #include "rtc.h"
 #include "screenlock.h"
+#include "sensors.h"
 
 #define ACTION_BT_RADIO_ON 1
 #define ACTION_BT_RADIO_OFF 2
@@ -27,6 +28,8 @@
 #define ACTION_QUERY_RTC_ALARM 15
 #define ACTION_SCREEN_UNLOCK 16
 #define ACTION_RTC_ALARM_SET_AT 17
+#define ACTION_QUERY_LIGHT_SENSOR 18
+#define ACTION_QUERY_PROXIMITY_SENSOR 19
 
 
 BOOL verbose;
@@ -55,11 +58,13 @@ static void queryUsage(char *programName)
 		"Query usage:\n", programName);
 	printf("\t%s --query [options]\n", programName);
 	printf("options:\n"
-		"\thelp     Display this help\n"
-		"\tbtradio  Display state of the Bluetooth radio\n"
-		"\tbattery  Display state of the battery\n"
-		"\toempanel Display Nokia LCD panel information\n"
-		"\trtcalarm Display RTC time and alarm\n");
+		"\thelp            Display this help\n"
+		"\tbtradio         Display state of the Bluetooth radio\n"
+		"\tbattery         Display charge, voltage, temperature and current of the battery\n"
+		"\toempanel        Display Nokia LCD panel information\n"
+		"\trtcalarm        Display RTC time and alarm\n"
+		"\tlightSensor     Display the ambient light (lux) and the raw data of the light sensor\n"
+		"\tproximitySensor Display the state and the raw data of the proximity sensor\n");
 }
 
 // Parses a time of the day "hh:mm:ss" (24-hour clock).
@@ -169,6 +174,14 @@ int main(int argc, char* argv[])
 			else if (_stricmp("rtcalarm", optarg) == 0)
 			{
 				action = ACTION_QUERY_RTC_ALARM;
+			}
+			else if (_stricmp("lightSensor", optarg) == 0)
+			{
+				action = ACTION_QUERY_LIGHT_SENSOR;
+			}
+			else if (_stricmp("proximitySensor", optarg) == 0)
+			{
+				action = ACTION_QUERY_PROXIMITY_SENSOR;
 			}
 			else
 			{
@@ -327,6 +340,10 @@ int main(int argc, char* argv[])
 		return UnsetRtcAlarm();
 	case ACTION_QUERY_RTC_ALARM:
 		return QueryRtcAlarm();
+	case ACTION_QUERY_LIGHT_SENSOR:
+		return QueryLightSensor();
+	case ACTION_QUERY_PROXIMITY_SENSOR:
+		return QueryProximitySensor();
 	}
 
 	return exit_status;

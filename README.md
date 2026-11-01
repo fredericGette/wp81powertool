@@ -18,7 +18,27 @@ Example: `wp81powertool.exe --vibrate 2500 500`
 
 ### Battery
 
-Leverages the Windows Runtime "Windows.Phone.Devices.Power.Battery" interfaces to query the remaining charge of the battery.
+`--query battery` displays the remaining charge, the voltage, the temperature and the current of the battery.  
+Example: `wp81powertool.exe --query battery`
+```
+Battery remaining charge: 85%
+Battery voltage: 4071 mV
+Battery temperature: 28.5 C
+Battery current: -302 mA
+```
+
+| Value | Source |
+|-------|--------|
+| Remaining charge (%) | Windows Runtime "Windows.Phone.Devices.Power.Battery" interfaces |
+| Voltage (mV) | IoctlCode IOCTL_BATTERY_QUERY_STATUS of the battery class driver [battc](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/battc.md). The device is found through its interface `GUID_DEVICE_BATTERY` (`CM_Get_Device_Interface_ListW`). On the Lumia 520 the value is the `VBATT` ADC reading of [NokiaEnergyDriver](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/nokiaenergydriver.md) |
+| Temperature (°C) | IoctlCode IOCTL_BATTERY_QUERY_INFORMATION (level BatteryTemperature) of the same driver. NokiaEnergyDriver returns the `BATT_THERM` ADC reading in tenths of kelvin |
+| Current (mA) | IoctlCode IOCTL_BMS_GET_BATTERY_CURRENT of the Qualcomm BMS driver "qcbms8930" (`\\.\QCOMPMICBMS`, see [qcbms8930](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/qcbms8930.md)) |
+
+A value that can't be read is reported as an error, without hiding the other values.  
+With `--verbose`, the battery device path and tag, the power state (`ON_LINE`, `CHARGING`, `DISCHARGING`, `CRITICAL`), the rate reported by the battery class and the raw temperature are displayed too.
+
+> [!NOTE]
+> The current is the raw signed value of the BMS driver. Its sign convention (charge or discharge) hasn't been confirmed yet: compare it with the power state displayed by `--verbose --query battery`.
 
 ### Screen
 
@@ -37,6 +57,40 @@ Example of result from the `--query oempanel`. This report is entirely generated
 
 Use some IoctlCodes of the Qualcomm PMIC driver "qcpmic8930" (`\\.\QCOMPMIC`), see [wp81PmicTool](https://github.com/fredericGette/wp81PmicTool).  
 `--alarm {seconds}` sets the alarm 0 of the PMIC RTC N seconds from now (`IOCTL_PM_RTC_ENABLE_ALARM`), `--alarm {days} {hh:mm:ss}` sets it N days from today (0 = today) at the given local time, `--alarm off` unsets it (`IOCTL_PM_RTC_DISABLE_ALARM`), and `--query rtcalarm` displays the RTC time, the alarm time and the alarm status.
+
+### Light and proximity sensors
+
+The ambient light sensor and the proximity sensor are the two functions of the Lite-On LTR-554ALS-02 chip ([ltr554als02](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/ltr554als02.md)). Each one is a device of the sensor class extension [SensorsClx](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/wpsensorsclx.md), found through its interface (`{97F115C8-599A-4153-8894-D2D12899918A}` for the light, `{5220DAE9-3179-4430-9F90-06266D2A34DE}` for the proximity). The tool starts a periodic notification (IoctlCodes 0x220014 / 0x220018), reads a sample with `ReadFile`, then stops the notification (0x22001C).
+
+`--query lightSensor` displays the ambient light in lux, plus the raw data of the last sample (`IOCTL_SENSOR_OEM_CALIBRATION_QUERY`): the two photodiode channels, the gain, the integration time and the lux computed without calibration.  
+Example: `wp81powertool.exe --query lightSensor`
+```
+Light sensor: 3.706 lux
+Light sensor CH0 (visible + IR): 20
+Light sensor CH1 (IR): 38
+Light sensor gain: 96X
+Light sensor integration time: 100 ms
+Light sensor uncalibrated: 4.678 lux
+```
+
+`--query proximitySensor` displays `DETECTED` / `NOT DETECTED`, plus a raw reading of the chip (count 0-2047), the gain and the LED settings.  
+Example: `wp81powertool.exe --query proximitySensor`
+```
+Proximity sensor: NOT DETECTED
+Proximity sensor raw count: 348 (0-2047)
+Proximity sensor gain: 16X
+Proximity sensor LED: 5 pulses, 60 kHz, 100% duty cycle, 100 mA
+```
+With a finger on the sensor:
+```
+Proximity sensor: DETECTED
+Proximity sensor raw count: 1949 (0-2047)
+Proximity sensor gain: 16X
+Proximity sensor LED: 5 pulses, 60 kHz, 100% duty cycle, 100 mA
+```
+The state changes when the raw count goes above 469 (far → near) or below 419 (near → far). These thresholds come from the calibration file `C:\DPP\Nokia\Sensors\PRX_LITEON_LTR554ALS02.bin`.
+
+With `--verbose`, the manufacturer, model and PART_ID of the chip (`IOCTL_SENSOR_OEM_INFO_QUERY`), the device path, the capabilities of the sensor and each sample are displayed too.
   
 ## Deployment
 

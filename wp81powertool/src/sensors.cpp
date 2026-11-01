@@ -11,7 +11,10 @@
 DEFINE_GUID(GUID_SENSOR_ALS, 0x97F115C8, 0x599A, 0x4153, 0x88, 0x94, 0xD2, 0xD1, 0x28, 0x99, 0x91, 0x8A);
 // 5220DAE9-3179-4430-9F90-06266D2A34DE
 DEFINE_GUID(GUID_SENSOR_PROXIMITY, 0x5220DAE9, 0x3179, 0x4430, 0x9F, 0x90, 0x06, 0x26, 0x6D, 0x2A, 0x34, 0xDE);
+// C2FB0F5F-E2D2-4C78-BCD0-352A9582819D
+DEFINE_GUID(GUID_SENSOR_ACCELEROMETER, 0xC2FB0F5F, 0xE2D2, 0x4C78, 0xBC, 0xD0, 0x35, 0x2A, 0x95, 0x82, 0x81, 0x9D);
 
+#define SENSOR_TYPE_ACCELEROMETER 0
 #define SENSOR_TYPE_PROXIMITY 1
 #define SENSOR_TYPE_ALS       2
 
@@ -91,7 +94,32 @@ typedef struct {
 	BYTE LedCurrent;        // mA
 } PRX_CALIBRATION;
 
+// Accelerometer: Kionix KXTNK-1000 (acckxtnk1000.sys).
+// See https://github.com/fredericGette/Lumia520/blob/main/content/drivers/acckxtnk1000.md
+typedef struct {
+	ULONG Size;          // 40
+	ULONG Reserved1;
+	ULONGLONG Time;      // KeQueryInterruptTime (100 ns)
+	ULONG SensorType;    // 0
+	ULONG Reserved2;
+	float X;             // g, after the offsets and the rotation (ACPI ROTM) into the phone coordinate system
+	float Y;
+	float Z;
+	ULONG Reserved3;
+} ACC_SAMPLE;
+
+typedef struct {
+	ULONG Size;          // 48
+	char Manufacturer[16];
+	char Model[16];
+	float X;             // g, last sample in the chip coordinate system, before the offsets and the rotation
+	float Y;
+	float Z;
+} ACC_CALIBRATION;
+
 static_assert(sizeof(SENSOR_SAMPLE) == 32, "SENSOR_SAMPLE");
+static_assert(sizeof(ACC_SAMPLE) == 40, "ACC_SAMPLE");
+static_assert(sizeof(ACC_CALIBRATION) == 48, "ACC_CALIBRATION");
 static_assert(sizeof(SENSOR_OEM_INFO) == 300, "SENSOR_OEM_INFO");
 static_assert(sizeof(ALS_CALIBRATION) == 120, "ALS_CALIBRATION");
 static_assert(sizeof(PRX_CALIBRATION) == 44, "PRX_CALIBRATION");
@@ -168,17 +196,26 @@ static void StopNotification(HANDLE hDevice)
 }
 
 // Returns the last sample, or waits for the next one.
-static BOOL ReadSample(HANDLE hDevice, SENSOR_SAMPLE *sample)
+static BOOL ReadRaw(HANDLE hDevice, void *buffer, DWORD size)
 {
 	DWORD read = 0;
-	if (!ReadFile(hDevice, sample, sizeof(*sample), &read, NULL))
+	if (!ReadFile(hDevice, buffer, size, &read, NULL))
 	{
 		printf("Failed to read the sensor sample! 0x%08lX\n", GetLastError());
 		return FALSE;
 	}
-	if (read < sizeof(*sample))
+	if (read < size)
 	{
 		printf("Sensor sample too short (%lu bytes)\n", read);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+static BOOL ReadSample(HANDLE hDevice, SENSOR_SAMPLE *sample)
+{
+	if (!ReadRaw(hDevice, sample, sizeof(*sample)))
+	{
 		return FALSE;
 	}
 	if (verbose) printf("Sample: time %llu ms, type %lu, value %lu (0x%lX)\n", sample->Time / 10000, sample->SensorType, sample->Value, sample->Value);
@@ -217,6 +254,61 @@ int QueryLightSensor()
 			printf("Light sensor gain: %uX\n", calibration.Gain);
 			printf("Light sensor integration time: %u ms\n", calibration.IntegrationTimeMs);
 			PrintMilliLux("Light sensor uncalibrated", calibration.UncalibratedMilliLux);
+		}
+		else
+		{
+			printf("Failed to send IOCTL_SENSOR_OEM_CALIBRATION_QUERY! 0x%08lX\n", GetLastError());
+		}
+	}
+
+	StopNotification(hDevice);
+	CloseHandle(hDevice);
+	return success ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static BOOL ReadAccSample(HANDLE hDevice, ACC_SAMPLE *sample)
+{
+	if (!ReadRaw(hDevice, sample, sizeof(*sample)))
+	{
+		return FALSE;
+	}
+	if (verbose) printf("Sample: time %llu ms, type %lu, X %.3f, Y %.3f, Z %.3f\n", sample->Time / 10000, sample->SensorType, (double)sample->X, (double)sample->Y, (double)sample->Z);
+	return TRUE;
+}
+
+int QueryAccelerometer()
+{
+	HANDLE hDevice = OpenDeviceInterface(&GUID_SENSOR_ACCELEROMETER, "accelerometer");
+	if (hDevice == INVALID_HANDLE_VALUE)
+	{
+		return EXIT_FAILURE;
+	}
+	if (verbose) PrintOemInfo(hDevice);
+
+	// The driver imposes its minimum sample time (10 ms).
+	if (!StartNotification(hDevice, SENSOR_TYPE_ACCELEROMETER, 0))
+	{
+		CloseHandle(hDevice);
+		return EXIT_FAILURE;
+	}
+
+	// The second read waits for the next sample, so the value is fresh.
+	ACC_SAMPLE sample = {};
+	BOOL success = ReadAccSample(hDevice, &sample) && ReadAccSample(hDevice, &sample);
+	if (success)
+	{
+		printf("Accelerometer X: %.3f g\n", (double)sample.X);
+		printf("Accelerometer Y: %.3f g\n", (double)sample.Y);
+		printf("Accelerometer Z: %.3f g\n", (double)sample.Z);
+
+		// Raw data of the last sample (chip axes, no offset). Queried while the sensor is running.
+		ACC_CALIBRATION calibration = {};
+		DWORD returned = 0;
+		if (DeviceIoControl(hDevice, IOCTL_SENSOR_OEM_CALIBRATION_QUERY, NULL, 0, &calibration, sizeof(calibration), &returned, NULL))
+		{
+			printf("Accelerometer raw X: %.3f g\n", (double)calibration.X);
+			printf("Accelerometer raw Y: %.3f g\n", (double)calibration.Y);
+			printf("Accelerometer raw Z: %.3f g\n", (double)calibration.Z);
 		}
 		else
 		{

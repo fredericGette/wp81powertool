@@ -7,3 +7,4 @@ extern "C" {
 
 int QueryLightSensor();
 int QueryProximitySensor();
+int QueryAccelerometer();

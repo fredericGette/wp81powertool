@@ -91,6 +91,26 @@ Proximity sensor LED: 5 pulses, 60 kHz, 100% duty cycle, 100 mA
 The state changes when the raw count goes above 469 (far → near) or below 419 (near → far). These thresholds come from the calibration file `C:\DPP\Nokia\Sensors\PRX_LITEON_LTR554ALS02.bin`.
 
 With `--verbose`, the manufacturer, model and PART_ID of the chip (`IOCTL_SENSOR_OEM_INFO_QUERY`), the device path, the capabilities of the sensor and each sample are displayed too.
+
+### Accelerometer
+
+The accelerometer is a Kionix KXTNK-1000 ([acckxtnk1000](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/acckxtnk1000.md)), another client of [SensorsClx](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/wpsensorsclx.md), found through its interface `{C2FB0F5F-E2D2-4C78-BCD0-352A9582819D}`. The tool reads it the same way as the light sensor (periodic notification, `ReadFile`, stop).
+
+`--query accelerometer` displays the acceleration on the X, Y and Z axes in g, in the phone coordinate system: the offsets of the calibration are applied and the axes are rotated with the matrix of the ACPI method `ROTM`. A phone lying flat, screen up, gives about (0, 0, -1) g.  
+It also displays the raw data of the last sample (`IOCTL_SENSOR_OEM_CALIBRATION_QUERY`): the values in the chip coordinate system, before the offsets and the rotation. On the Lumia 520, `ROTM` only inverts Z.  
+Example: `wp81powertool.exe --query accelerometer`
+```
+Accelerometer X: 0.044 g
+Accelerometer Y: 0.047 g
+Accelerometer Z: -1.034 g
+Accelerometer raw X: 0.032 g
+Accelerometer raw Y: 0.040 g
+Accelerometer raw Z: 1.032 g
+```
+With the phone turned so that the X axis (or the Y axis) points up, that axis shows ≈ +1 g and the other two ≈ 0.
+
+> [!NOTE]
+> The driver keeps sampling every 10 ms, so the raw values may come from a newer sample than the one displayed above them and differ slightly.
   
 ## Deployment
 

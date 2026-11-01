@@ -30,6 +30,7 @@
 #define ACTION_RTC_ALARM_SET_AT 17
 #define ACTION_QUERY_LIGHT_SENSOR 18
 #define ACTION_QUERY_PROXIMITY_SENSOR 19
+#define ACTION_QUERY_ACCELEROMETER 20
 
 
 BOOL verbose;
@@ -64,7 +65,8 @@ static void queryUsage(char *programName)
 		"\toempanel        Display Nokia LCD panel information\n"
 		"\trtcalarm        Display RTC time and alarm\n"
 		"\tlightSensor     Display the ambient light (lux) and the raw data of the light sensor\n"
-		"\tproximitySensor Display the state and the raw data of the proximity sensor\n");
+		"\tproximitySensor Display the state and the raw data of the proximity sensor\n"
+		"\taccelerometer   Display the X, Y, Z acceleration (g) and the raw data of the accelerometer\n");
 }
 
 // Parses a time of the day "hh:mm:ss" (24-hour clock).
@@ -182,6 +184,10 @@ int main(int argc, char* argv[])
 			else if (_stricmp("proximitySensor", optarg) == 0)
 			{
 				action = ACTION_QUERY_PROXIMITY_SENSOR;
+			}
+			else if (_stricmp("accelerometer", optarg) == 0)
+			{
+				action = ACTION_QUERY_ACCELEROMETER;
 			}
 			else
 			{
@@ -344,6 +350,8 @@ int main(int argc, char* argv[])
 		return QueryLightSensor();
 	case ACTION_QUERY_PROXIMITY_SENSOR:
 		return QueryProximitySensor();
+	case ACTION_QUERY_ACCELEROMETER:
+		return QueryAccelerometer();
 	}
 
 	return exit_status;

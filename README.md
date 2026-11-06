@@ -112,6 +112,13 @@ With the phone turned so that the X axis (or the Y axis) points up, that axis sh
 > [!NOTE]
 > The driver keeps sampling every 10 ms, so the raw values may come from a newer sample than the one displayed above them and differ slightly.
   
+### NTP
+
+`--ntp` updates the clock now from the NTP server, instead of waiting for the next scheduled synchronization of the phone (every 24 hours by default). It does what [WPTimeSvc.dll](https://github.com/fredericGette/Lumia520/blob/main/content/libraries/wptimesvc.md) does: it starts the [W32Time](https://github.com/fredericGette/Lumia520/blob/main/content/libraries/w32time.md) service, asks it to resync with the RPC call `W32TimeSync` (`ncalrpc:[W32TIME_ALT]`, opnum 0), then stops the service again if it wasn't already running. The call is tried up to 5 times, and a correction beyond the maximum of the service (15 hours) is forced. The clock is displayed before and after the update, and the system is notified with `WNF_SHL_SYSTEM_CLOCK_CHANGED`.  
+Example: `wp81powertool.exe --ntp`
+
+The server is the one configured in `HKLM\System\CurrentControlSet\Services\W32Time\Parameters\NtpServer` (`time.windows.com` by default). The phone needs a network connection, otherwise the result is "no data".
+
 ## Deployment
 
 - [Install a telnet server on the phone](https://github.com/fredericGette/wp81documentation/tree/main/telnetOverUsb#readme), in order to run the application.  

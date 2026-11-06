@@ -10,6 +10,7 @@
 #include "rtc.h"
 #include "screenlock.h"
 #include "sensors.h"
+#include "ntp.h"
 
 #define ACTION_BT_RADIO_ON 1
 #define ACTION_BT_RADIO_OFF 2
@@ -31,6 +32,7 @@
 #define ACTION_QUERY_LIGHT_SENSOR 18
 #define ACTION_QUERY_PROXIMITY_SENSOR 19
 #define ACTION_QUERY_ACCELEROMETER 20
+#define ACTION_NTP_SYNC 21
 
 
 BOOL verbose;
@@ -50,6 +52,7 @@ static void usage(char *programName)
 		"\t-l, --brightness {extra-low|low|medium|high} Set LCD brightness level\n"	
 		"\t-a, --alarm {seconds|off} Set the RTC alarm N seconds from now, or unset it\n"
 		"\t-a, --alarm {days} {hh:mm:ss} Set the RTC alarm N days from today (0 = today) at the given time\n"
+		"\t-t, --ntp                 Update the clock now from the NTP server\n"
 		"\t-q, --query {help|...}    Display \'query\' option usage\n");
 }
 
@@ -106,6 +109,7 @@ static const struct option main_options[] = {
 	{ "screen",    required_argument, NULL, 's' },
 	{ "brigthness",required_argument, NULL, 'l' },
 	{ "alarm",     required_argument, NULL, 'a' },
+	{ "ntp",       no_argument,       NULL, 't' },
 	{ "query",     required_argument, NULL, 'q' },
 	{}
 };
@@ -123,7 +127,7 @@ int main(int argc, char* argv[])
 		int opt;
 
 		opt = getopt_long(argc, argv,
-			"hvb:q:n:s:l:a:",
+			"hvtb:q:n:s:l:a:",
 			main_options, NULL);
 
 		if (opt < 0) {
@@ -154,6 +158,9 @@ int main(int argc, char* argv[])
 			{
 				action = ACTION_BT_RADIO_OFF;
 			}
+			break;
+		case 't':
+			action = ACTION_NTP_SYNC;
 			break;
 		case 'q':
 			if (_stricmp("help", optarg) == 0)
@@ -350,6 +357,8 @@ int main(int argc, char* argv[])
 		return QueryLightSensor();
 	case ACTION_QUERY_PROXIMITY_SENSOR:
 		return QueryProximitySensor();
+	case ACTION_NTP_SYNC:
+		return SyncClockWithNtp();
 	case ACTION_QUERY_ACCELEROMETER:
 		return QueryAccelerometer();
 	}
